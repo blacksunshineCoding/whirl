@@ -128,7 +128,7 @@ $(document).ready(function() {
 			type: 'GET',
 			success: function(data) {
 				$('.step-download .load-wrapper').fadeOut(250);
-				$('.step-download .image').attr('download', data);
+				$('.step-download .image').attr('download', $('.hiddenTerm').val());
 				$('.step-download .image').attr('href', '../cache/blend/' + data);
 				$('.step-download .image img').attr('src', '../cache/blend/' + data);
 				$('.step-final .alert-success').fadeIn(300, function() {
