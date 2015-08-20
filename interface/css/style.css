@@ -214,6 +214,7 @@ h4 {
 .btn:focus,
 .btn:hover {
 	opacity: .75;
+	outline: 0;
 }
 
 .continue {
