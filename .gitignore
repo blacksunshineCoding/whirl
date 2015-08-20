@@ -2,3 +2,10 @@
 .project
 .settings/org.eclipse.php.core.prefs
 .settings/org.eclipse.wst.common.project.facet.core.xml
+index.php
+cache/blend/*
+cache/scaled/*
+cache/src/*
+_test
+todo.md
+fetched-results.json
