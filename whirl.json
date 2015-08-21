@@ -1,0 +1,32 @@
+{
+	"name": "whirl",
+	"title": "Whirl",
+	"description": "a tool for blending images according to a term (google image search)",
+	"keywords": [
+		"whirl",
+		"image",
+		"blend",
+		"google",
+		"search"
+	],
+	"version": "0.2",
+	"author": {
+		"name": "Stefan Gruber [black sunshine]",
+		"url": "http://blacksunshine.cc"
+	},
+	"maintainers": [{
+		"name": "Stefan Gruber",
+		"email": "admin@blacksunshine.cc",
+		"url": "http://blacksunshine.cc"
+	}],
+	"licenses": [{
+		"type": "Beerware",
+		"url": "https://github.com/blacksunshineCoding/whirl/blob/master/BEERWARE.txt"
+	}],
+	"homepage": "http://whirl.blacksunshine.cc",
+	"demo": "http://whirl.blacksunshine.cc",
+	"docs": "https://github.com/blacksunshineCoding/whirl/blob/master/README.md",
+	"dependencies": {
+		"jquery": ">=1.8"
+	}
+}
