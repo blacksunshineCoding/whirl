@@ -1,18 +1,59 @@
 <?php
 class Whirl {
+	var $term = 'babycat';
+	var $quantity = 40;
+	var $cacheDir = 'cache';
+	var $finalImageWidth = 400;
+	var $finalImageHeight = 400;
+	var $blendMode = 'IMG_EFFECT_NORMAL';
 	
-	public function full($term, $quantity) {
-		$results = $this->getResults($term, $quantity);
-		$this->saveResults($results);
-		$this->resizeResults();
-		$this->multiplyResults();
+	var $allResults;
+	
+	public function __construct($options) {
+		if (isset($options['term'])) {
+			$this->term = $options['term'];
+		}
+		
+		if (isset($options['quantity'])) {
+			$this->quantity = $options['quantity'];
+		}
+		
+		if (isset($options['cacheDir'])) {
+			$this->cacheDir = $options['cacheDir'];
+		}
+		
+		if (isset($options['finalImageWidth'])) {
+			$this->finalImageWidth = $options['finalImageWidth'];
+		}
+		
+		if (isset($options['finalImageHeight'])) {
+			$this->finalImageHeight = $options['finalImageHeight'];
+		}
+		
+		if (isset($options['blendMode'])) {
+			$this->blendMode = $options['blendMode'];
+		}
+		
+		$this->createDir('src');
+		$this->createDir('scaled');
+		$this->createDir('blend');
 	}
 	
-	public function clearCache($cacheDir) {
+	public function whirl() {
+		$this->clearCache();
+		$this->getResults();
+		$this->saveResults();
+		$this->resizeResults();
+		$this->multiplyResults();
+		$finalImage = $this->finalImage();
+		return $finalImage;
+	}
+	
+	public function clearCache() {
 		
-		$srcDir = $cacheDir . '/src';
-		$scaledDir = $cacheDir . '/scaled';
-		$blendDir = $cacheDir . '/blend';
+		$srcDir = $this->cacheDir . '/src';
+		$scaledDir = $this->cacheDir . '/scaled';
+		$blendDir = $this->cacheDir . '/blend';
 		
 		$srcFiles = glob($srcDir . '/*');
 		foreach ($srcFiles as $srcFile) {
@@ -33,12 +74,12 @@ class Whirl {
 		
 	}
 	
-	public function getResults($term, $quantity) {
+	public function getResults() {
 		$allResults = array();
 		$count = 0;
 
-		while ($count <= $quantity) {
-			$json = $this->get_url_contents('http://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=' . $term . '&start=' . $count);
+		while ($count <= $this->quantity) {
+			$json = $this->get_url_contents('http://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=' . urlencode($this->term) . '&start=' . $count);
 			$data = json_decode($json);
 			foreach ($data->responseData->results as $result) {
 				$allResults[] = $result->url;
@@ -46,17 +87,23 @@ class Whirl {
 			$count = $count + 4;
 		}
 		
-		return $allResults;
+		$this->allResults = $allResults;
+		return $this->allResults;
 	}
 	
-	public function saveResults($results) {
-		foreach ($results as $resultId => $result) {
+	public function saveResults($allResults=false) {
+		
+		if ($allResults == false) {
+			$allResults = $this->allResults;
+		}
+		
+		foreach ($allResults as $resultId => $result) {
 			$extension = strtolower(pathinfo($result, PATHINFO_EXTENSION));
 			if (in_array($extension, array('jpg', 'png', 'jpeg', 'gif'))) {
 				$saveFile = 'image_' . $resultId . '.' . $extension;
 				$fileContent = @file_get_contents($result);
 				if ($fileContent !== false) {
-					file_put_contents('../cache/src/' . $saveFile, $fileContent);
+					file_put_contents($this->cacheDir . '/src/' . $saveFile, $fileContent);
 				}
 			}
 
@@ -64,15 +111,16 @@ class Whirl {
 	}
 	
 	public function resizeResults() {
-		$results = array_diff(scandir('../cache/src'), array('.', '..'));
+		
+		$results = array_diff(scandir($this->cacheDir . '/src'), array('.', '..'));
 		foreach ($results as $result) {
-			$image = $this->resizePic($result, 400, null, '../cache/src', '../cache/scaled');
+			$image = $this->resizePic($result, 400, null, $this->cacheDir . '/src', $this->cacheDir . '/scaled');
 // 			$image = $this->picCrop($result, 400, 400, 'center', 'center');
 		}
 	}
 	
 	public function cropResults() {
-		$results = array_diff(scandir('../cache/scaled'), array('.', '..'));
+		$results = array_diff(scandir($this->cacheDir . '/scaled'), array('.', '..'));
 		foreach ($results as $result) {
 			$image = $this->picCrop($result, 400, 400, 'center', 'center');
 		}	
@@ -86,14 +134,24 @@ class Whirl {
 		return 'blank.png';
 	}
 	
+	private function createDir($dirname) {
+		$dir = $this->cacheDir . '/' . $dirname;
+		if (!file_exists($dir)) {
+			mkdir($dir, 0777, true);
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
 	public function multiplyResults() {
-		$results = array_diff(scandir('../cache/scaled'), array('.', '..'));
+		$results = array_diff(scandir($this->cacheDir . '/scaled'), array('.', '..'));
 		$count = 0;
 		$opacity = round(100 / count($results));
 		foreach ($results as $result) {
 			$lastImage = $this->blankImage();
-			$destFile = '../cache/blend/blend' . $count . '.png';
-			$thisImage = '../cache/scaled/' . $result;
+			$destFile = $this->cacheDir . '/blend/blend' . $count . '.png';
+			$thisImage = $this->cacheDir . '/scaled/' . $result;
 			if (isset($lastImage)) {
 				if (!isset($blendImage)) {
 					$blendImage = $this->multiplyRun($lastImage, $thisImage, $destFile, $opacity);
@@ -102,9 +160,18 @@ class Whirl {
 				}
 			}
 			
-			$lastImage = '../cache/scaled/' . $result;
+			$lastImage = $this->cacheDir . '/scaled/' . $result;
 			$count++;
 		}
+		
+		$finalImageName = $this->finalImage();
+		$finalImage = $this->cacheDir . '/blend/' . $finalImageName;
+		
+		$finalImageNameExplode = explode('.', $finalImageName);
+		$finalImageEnding = end($finalImageNameExplode);
+		$finalImageNewName = $this->term . '.' . $finalImageEnding;
+		$finalimageNew = $this->cacheDir . '/blend/' . $finalImageNewName;
+		copy($finalImage, $finalimageNew);
 		
 	}
 	
@@ -143,7 +210,10 @@ class Whirl {
 		$destX = ($baseWidth - $topWidth) / 2;
 		$destY = ($baseHeight - $topHeight) / 2;
 		
-		imagelayereffect($baseImage, IMG_EFFECT_NORMAL);
+		if (function_exists('imagelayereffect')) {
+			imagelayereffect($baseImage, IMG_EFFECT_NORMAL);
+		}
+		
 		imagecopymerge(
 				$baseImage, // destination
 				$topImage, // source
@@ -159,8 +229,8 @@ class Whirl {
 		return $destFile;
 	}
 	
-	public function finalImage($cacheDir) {
-		$blendDir = scandir($cacheDir . '/blend/');
+	public function finalImage() {
+		$blendDir = scandir($this->cacheDir . '/blend/');
 		$lastFile = end($blendDir);
 		return $lastFile;
 	}
@@ -176,7 +246,7 @@ class Whirl {
 		return $ret;
 	}
 	
-	private function resizePic($img, $width, $height, $src = '../cache/src', $dest = '../cache/scaled') {
+	private function resizePic($img, $width, $height, $src, $dest) {
 		list ($srcWidth, $srcHeight, $srcTyp) = getimagesize($src . '/' . $img);
 		$srcRatio = $srcWidth / $srcHeight;
 		$srcNewRatio = $srcWidth / $width;
