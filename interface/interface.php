@@ -123,8 +123,14 @@
 				<a id="button-download" class="image"><img src=""></a>
 			</section>
 			<section class="step step-thanks">
-				<h4>thanks for using!</h4>
-				<p></p>
+				<h4>thanks for using whirl!</h4>
+				<p class="author">
+					<span>&copy; Stefan Gruber &lt;<a href="mailto:admin@blacksunshine.cc">admin@blacksunshine.cc</a>&gt;</span>
+				</p>
+				<p class="links">
+					<a href="https://github.com/blacksunshineCoding/whirl">project<span>@</span>github</a>
+					<a href="https://github.com/blacksunshineCoding">author<span>@</span>github</a>
+				</p>
 			</section>
 			<section class="continue">
 				<h3>follow the instruction and enter the form above to continue...</h3>

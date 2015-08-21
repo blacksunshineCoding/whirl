@@ -1,41 +1,50 @@
 <?php
-include '../debug.php';
+include '../library/debug.php';
 include '../library/whirl.class.php';
 
-if (isset($_GET['do'])) switch($_GET['do']) {
-	case 'clear':
-		$whirl = new Whirl();
-		$cacheDir = dirname(__FILE__) . '/../cache';
-		$whirl->clearCache($cacheDir);
-		break;
-		
-	case 'fetch':
-		$whirl = new Whirl();
-		$fetchedResults = $whirl->getResults(urldecode($_GET['term']), $_GET['quantity']);
-		file_put_contents('../cache/fetched-results.json', json_encode($fetchedResults));
-		echo json_encode($fetchedResults);
-		break;
-		
-	case 'save':
-		$whirl = new Whirl();
-		$json = file_get_contents('../cache/fetched-results.json');
-		$fetchedResults = json_decode($json);
-		$whirl->saveResults($fetchedResults);
-		break;
-		
-	case 'resize':
-		$whirl = new Whirl();
-		$whirl->resizeResults();
-		break;
-		
-	case 'multiply':
-		$whirl = new Whirl();
-		$result = $whirl->multiplyResults();
-		break;
-		
-	case 'final':
-		$whirl = new Whirl();
-		$result = $whirl->finalImage('../cache');
-		echo $result;
-		break;
+if (isset($_GET['do'])) {
+
+	$options['term'] = urldecode($_GET['term']);
+	$options['quantity'] = $_GET['quantity'];
+	$options['cacheDir'] = dirname(__FILE__) . '/../cache';
+	
+	switch($_GET['do']) {
+	
+		case 'clear':
+			$whirl = new Whirl($options);
+			$whirl->clearCache();
+			break;
+			
+		case 'fetch':
+			$whirl = new Whirl($options);
+			$results = $whirl->getResults();
+			if (!file_exists($whirl->cacheDir . '/fetched-results.json')) {
+				touch($whirl->cacheDir . '/fetched-results.json');
+			}
+			file_put_contents($whirl->cacheDir . '/fetched-results.json', json_encode($results));
+			break;
+			
+		case 'save':
+			$whirl = new Whirl($options);
+			$json = file_get_contents($whirl->cacheDir . '/fetched-results.json');
+			$fetchedResults = json_decode($json);
+			$whirl->saveResults($fetchedResults);
+			break;
+			
+		case 'resize':
+			$whirl = new Whirl($options);
+			$whirl->resizeResults();
+			break;
+			
+		case 'multiply':
+			$whirl = new Whirl($options);
+			$result = $whirl->multiplyResults();
+			break;
+			
+		case 'final':
+			$whirl = new Whirl($options);
+			$result = $whirl->finalImage();
+			echo $result;
+			break;
+	}
 }

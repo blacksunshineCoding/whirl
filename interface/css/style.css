@@ -180,10 +180,23 @@ h4 {
 	padding-top: 0;
 }
 
+.step-thanks .links a {
+	display: block;
+}
+
+.step-thanks .links a span {
+	font-size: 20px;
+	text-decoration: none !important;
+}
+
 .chapter-settings h3,
 .chapter-execution h3 {
 	font-size: 37px;
 	margin-bottom: 25px;
+}
+
+.json-container {
+	visibility: hidden;
 }
 
 .step p,

@@ -73,9 +73,11 @@ $(document).ready(function() {
 	
 	$('#button-save').click(function() {
 		$('.step-save .load-wrapper').fadeIn(50);
+		var term = $('.hiddenTerm').val();
+		var quantity = $('.hiddenQuantity').val();
 		
 		$.ajax({
-			url: 'ajax.php?do=save',
+			url: 'ajax.php?do=save&term=' + encodeURIComponent(term) + '&quantity=' + quantity,
 			type: 'GET',
 			success: function(data){
 				$('.step-save .load-wrapper').fadeOut(250);
@@ -90,9 +92,11 @@ $(document).ready(function() {
 	
 	$('#button-resize').click(function() {
 		$('.step-resize .load-wrapper').fadeIn(50);
+		var term = $('.hiddenTerm').val();
+		var quantity = $('.hiddenQuantity').val();
 		
 		$.ajax({
-			url: 'ajax.php?do=resize',
+			url: 'ajax.php?do=resize&term=' + encodeURIComponent(term) + '&quantity=' + quantity,
 			type: 'GET',
 			success: function(data){
 				$('.step-resize .load-wrapper').fadeOut(250);
@@ -106,9 +110,11 @@ $(document).ready(function() {
 	
 	$('#button-multiply').click(function() {
 		$('.step-multiply .load-wrapper').fadeIn(50);
+		var term = $('.hiddenTerm').val();
+		var quantity = $('.hiddenQuantity').val();
 		
 		$.ajax({
-			url: 'ajax.php?do=multiply',
+			url: 'ajax.php?do=multiply&term=' + encodeURIComponent(term) + '&quantity=' + quantity,
 			type: 'GET',
 			success: function(data){
 				$('.step-multiply .load-wrapper').fadeOut(250);
@@ -122,9 +128,11 @@ $(document).ready(function() {
 	
 	$('#button-final').click(function() {
 		$('.step-download .load-wrapper').fadeIn(50);
+		var term = $('.hiddenTerm').val();
+		var quantity = $('.hiddenQuantity').val();
 		
 		$.ajax({
-			url: 'ajax.php?do=final',
+			url: 'ajax.php?do=final&term=' + encodeURIComponent(term) + '&quantity=' + quantity,
 			type: 'GET',
 			success: function(data) {
 				$('.step-download .load-wrapper').fadeOut(250);
@@ -133,6 +141,7 @@ $(document).ready(function() {
 				$('.step-download .image img').attr('src', '../cache/blend/' + data);
 				$('.step-final .alert-success').fadeIn(300, function() {
 					$('.step-download').fadeIn(300);
+					$('.step-thanks').fadeIn(300);
 				});
 			}
 		}).done(function() {
