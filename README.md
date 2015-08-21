@@ -58,10 +58,10 @@ as alternative you can go through the whole process step by step:
 ### options
 
 ## changelog
-version 0.1:
+version 0.1 (20.08.2015):
  - initial commit
 
-version 0.2:
+version 0.2 (21.08.2015):
  - a custom cache dir can now be set in the options
  - if the cache subdirs don't exists, they are created in the constructor
  - a custom term can now be set in the options
@@ -72,7 +72,10 @@ version 0.2:
  - the final blend result is now saved in the cache dir with the search term as filename
  - completed the credits section in the interface
  - remove the debug output from the interface
+ - documentation completed
 
+version 0.3:
+ - coming soon
 
 ## todo
  1. class: optional size of final image (via options)
@@ -84,4 +87,3 @@ version 0.2:
   a. fast: only necessary settings and directly show the final image
   b. steps: go trough the steps of the script
   c: explain: it will be explained which part of the interface runs which part of the class
- 7. readme: complete documentation
