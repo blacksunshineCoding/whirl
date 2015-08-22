@@ -1,6 +1,37 @@
 $(document).ready(function() {
+	sh_highlightDocument();
+	
+	$('a.smooth').click(function(){
+	    $('html, body').animate({
+	        scrollTop: $( $.attr(this, 'href') ).offset().top
+	    }, 500);
+	    return false;
+	});
+	
+	$('select.interface-mode').change(function() {
+		var mode = $(this).val();
+		switch (mode) {
+			case 'fast':
+				break;
+				
+			default:
+			case 'steps':
+				break;
+				
+			case 'expert':
+				$('.chapter-expert').fadeIn(250);
+				$('pre.expert').fadeIn(250);
+				smoothScroll('.chapter-expert');
+				break;
+		}
+		
+		console.log(mode);
+	});
+	
 	$('#button-start').click(function() {
 		$('.chapter-cache').fadeIn(500);
+		smoothScroll('.chapter-cache');
+		$('#button-start').fadeOut(250);
 	});
 	
 	$('#button-cache').click(function() {
@@ -11,6 +42,8 @@ $(document).ready(function() {
 			success: function(data){
 				$('.chapter-settings').fadeIn(500, function() {
 					$('.step-term').fadeIn(500);
+					smoothScroll('.step-term');
+					$('#button-cache').fadeOut(250);
 				});
 			}
 		}).done(function() {
@@ -28,6 +61,8 @@ $(document).ready(function() {
 			$('.step-term .alert-danger').fadeOut(300);
 			$('.step-term .alert-success').fadeIn(300, function() {
 				$('.step-quantity').fadeIn(300);
+				smoothScroll('.step-quantity');
+				$('#button-term').fadeOut(250);
 			});
 		} else {
 			$('.step-term .alert-danger').fadeIn(300);
@@ -45,6 +80,8 @@ $(document).ready(function() {
 			$('.step-quantity .alert-success').fadeIn(300, function() {
 				$('.chapter-execution').fadeIn(300, function() {
 					$('.step-fetch').fadeIn(300);
+					smoothScroll('.step-fetch');
+					$('#button-quantity').fadeOut(250);
 				});
 			});
 		} else {
@@ -65,6 +102,8 @@ $(document).ready(function() {
 				$('.json-container').html(data);
 				$('.step-fetch .alert-success').fadeIn(300, function() {
 					$('.step-save').fadeIn(300);
+					smoothScroll('.step-save');
+					$('#button-fetch').fadeOut(250);
 				});
 			}
 		}).done(function() {
@@ -84,6 +123,8 @@ $(document).ready(function() {
 				$('.json-container').html(data);
 				$('.step-save .alert-success').fadeIn(300, function() {
 					$('.step-resize').fadeIn(300);
+					smoothScroll('.step-resize');
+					$('#button-save').fadeOut(250);
 				});
 			}
 		}).done(function() {
@@ -102,6 +143,8 @@ $(document).ready(function() {
 				$('.step-resize .load-wrapper').fadeOut(250);
 				$('.step-resize .alert-success').fadeIn(300, function() {
 					$('.step-multiply').fadeIn(300);
+					smoothScroll('.step-multiply');
+					$('#button-resize').fadeOut(250);
 				});
 			}
 		}).done(function() {
@@ -120,6 +163,8 @@ $(document).ready(function() {
 				$('.step-multiply .load-wrapper').fadeOut(250);
 				$('.step-multiply .alert-success').fadeIn(300, function() {
 					$('.step-final').fadeIn(300);
+					smoothScroll('.step-final');
+					$('#button-multiply').fadeOut(250);
 				});
 			}
 		}).done(function() {
@@ -141,7 +186,10 @@ $(document).ready(function() {
 				$('.step-download .image img').attr('src', '../cache/blend/' + data);
 				$('.step-final .alert-success').fadeIn(300, function() {
 					$('.step-download').fadeIn(300);
+					$('.continue').fadeOut(300);
 					$('.step-thanks').fadeIn(300);
+					smoothScroll('.step-download');
+					$('#button-final').fadeOut(250);
 				});
 			}
 		}).done(function() {
@@ -154,4 +202,10 @@ function isNaturalNumber(n) {
 	var n1 = Math.abs(n),
 		n2 = parseInt(n, 10);
 	return !isNaN(n1) && n2 === n1 && n1.toString() === n;
+}
+
+function smoothScroll(target) {
+    $('html, body').animate({
+        scrollTop: $(target).offset().top
+    }, 500);
 }
