@@ -9,7 +9,7 @@
 		"google",
 		"search"
 	],
-	"version": "0.2",
+	"version": "0.3",
 	"author": {
 		"name": "Stefan Gruber [black sunshine]",
 		"url": "http://blacksunshine.cc"
@@ -25,8 +25,5 @@
 	}],
 	"homepage": "http://whirl.blacksunshine.cc",
 	"demo": "http://whirl.blacksunshine.cc",
-	"docs": "https://github.com/blacksunshineCoding/whirl/blob/master/README.md",
-	"dependencies": {
-		"jquery": ">=1.8"
-	}
+	"docs": "https://github.com/blacksunshineCoding/whirl/blob/master/README.md"
 }
