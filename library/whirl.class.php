@@ -694,66 +694,66 @@ class Whirl {
 						break;
 						
 					case 'hue':
-						/*
-						 	variant #1
-						 	In Hue blending mode, only the lower layer pixel with >0% Hue and >0% saturation will be visible in result. See the Example shown below:
-						 	
-						 	if (hue(base) > 0 || saturation(base) > 0) {
-								base
-							} else {
-								blend
-							}
-						 	
-						 	variant #2
-						 	Creates a color with the hue of the source color and the saturation and luminosity of the backdrop color.
-							
-							
-							
-						*/
+						// formula The Hue blend mode preserves the luma and chroma of the bottom layer, while adopting the hue of the top layer (wikipedia)
+						// unsure about handling of alpha channel (opacity)
+						$baseColorHsl = $this->rgbToHsl($baseColor['red'], $baseColor['green'], $baseColor['green']);
+						$topColorHsl = $this->rgbToHsl($topColor['red'], $topColor['green'], $topColor['blue']);
+						$destColorRgb = $this->hslToRgb($topColorHsl['hue'], $baseColorHsl['saturation'], $baseColorHsl['lightness']);
+						
+						$destColor = array(
+							'red' => $destColorRgb['red'],
+							'green' => $destColorRgb['green'],
+							'blue' => $destColorRgb['blue'],
+							'alpha' => $topColor['alpha']
+						);
 						break;
 					
 					case 'saturation':
+						// formula The Saturation blend mode preserves the luma and hue of the bottom layer, while adopting the chroma of the top layer. (wikipedia)
+						// unsure about handling of alpha channel (opacity)
+						$baseColorHsl = $this->rgbToHsl($baseColor['red'], $baseColor['green'], $baseColor['green']);
+						$topColorHsl = $this->rgbToHsl($topColor['red'], $topColor['green'], $topColor['blue']);
+						$destColorRgb = $this->hslToRgb($baseColorHsl['hue'], $topColorHsl['saturation'], $baseColorHsl['lightness']);
+						
+						$destColor = array(
+							'red' => $destColorRgb['red'],
+							'green' => $destColorRgb['green'],
+							'blue' => $destColorRgb['blue'],
+							'alpha' => $topColor['alpha']
+						);
 						break;
 						
 					case 'color':
+						// formula The Color blend mode preserves the luma of the bottom layer, while adopting the hue and chroma of the top layer. (wikipedia)
+						// unsure about handling of alpha channel (opacity)
+						$baseColorHsl = $this->rgbToHsl($baseColor['red'], $baseColor['green'], $baseColor['green']);
+						$topColorHsl = $this->rgbToHsl($topColor['red'], $topColor['green'], $topColor['blue']);
+						$destColorRgb = $this->hslToRgb($topColorHsl['hue'], $topColorHsl['saturation'], $baseColorHsl['lightness']);
+						
+						$destColor = array(
+							'red' => $destColorRgb['red'],
+							'green' => $destColorRgb['green'],
+							'blue' => $destColorRgb['blue'],
+							'alpha' => $topColor['alpha']
+						);
 						break;
 							
 					case 'luminosity':
+						// The Luminosity blend mode preserves the hue and chroma of the bottom layer, while adopting the luma of the top layer. (wikipedia)
+						// unsure about handling of alpha channel (opacity)
+						$baseColorHsl = $this->rgbToHsl($baseColor['red'], $baseColor['green'], $baseColor['green']);
+						$topColorHsl = $this->rgbToHsl($topColor['red'], $topColor['green'], $topColor['blue']);
+						$destColorRgb = $this->hslToRgb($baseColorHsl['hue'], $baseColorHsl['saturation'], $topColorHsl['lightness']);
+						
+						$destColor = array(
+							'red' => $destColorRgb['red'],
+							'green' => $destColorRgb['green'],
+							'blue' => $destColorRgb['blue'],
+							'alpha' => $topColor['alpha']
+						);
 						break;
 						
 				}
-				
-				/*
-				PHOTOSHOP BLEND MODES
-				
-				normal					normal
-				sprenkeln				dissolve
-				abdunkeln				darken
-				multiplizieren			multiply
-				farbig nachbelichten	color burn
-				linear nachbelichten	linear burn
-				dunklere farbe			darker color
-				aufhellen				lighten
-				negativ multiplizieren	screen
-				farbig abwedeln			color dodge
-				linear abwedeln			linear dodge
-				hellere farbe			lighter color
-				ineinander kopieren		overlay
-				weiches licht			soft light
-				hartes light			hard light
-				strahlendes light		vivid light
-				lineares licht			linear light
-				lichtpunkt				pin light
-				hart mischen			hard mix
-				differenz				difference
-				ausschluss				exclusion
-				subtrahieren			subtract
-				dividieren				divide
-				farbton					hue
-				saettigung				saturation
-				farbe					color
-				luminanz				luminosity
-				 */
 			
 				$colorIndex = imagecolorallocatealpha($baseImage, $destColor['red'], $destColor['green'], $destColor['blue'], $destColor['alpha']);
 				
