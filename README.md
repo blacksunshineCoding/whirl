@@ -151,3 +151,4 @@ version 0.3 (22.08.2015):
  12. class: add image crop mode
  13. class: add optional background-color - DONE
  14. class: add real blend mode
+ 15. class: test all blend modes (control effect with photoshop)
