@@ -64,7 +64,12 @@ as alternative you can go through the whole process step by step:
 	$options['cacheDir'] = '../cache'; // the dir which is used for cache files
 	$options['finalImageWidth'] = 400; // width of the final image
 	$options['finalImageHeight'] = 400; // height of the final image
-	$options['blendMode'] = 'normal'; // normal, replace, overlay; alpha blending mode (imagelayereffect)
+	$options['finalImageSizing'] = 'default'; // default/crop; if cropped the images will be cropped to exact size
+	$options['finalImageAlignH'] = 'center'; // horicontal align if cropped (left/center/right)
+	$options['finalImageAlignV'] = 'center'; // vertical align if cropped (top/center/bottom)
+	$options['backgroundColor'] = '255,255,255'; // color of the base image behind all blended images (rgb values/transparent)
+	$options['blendOpacity'] = 'default'; // opacity of the single images when blended (range from 0 to 100; default is 100 divided by quantity)
+	$options['alphaBlendMode'] = 'normal'; // normal, replace, overlay; alpha blending mode (imagelayereffect)
 	$options['realMultiply'] = false; // multiplies the images in the way photoshop does
 	$options['effectList'] = 'grayscale,negate'; // effects in a comma-seperated list, values see below
 	$options['effectBrightnessLevel'] = 100; // level for the brigthness effect (-255 to 255)
@@ -119,9 +124,18 @@ version 0.3 (22.08.2015):
  - interface: now a mode can be chosen
  - interface: expert mode was added
  - documentation updated
+ 
+ version 0.4 (in progress):
+ - class: background-color (base behind all blended images) can now be set in options
+ - class: blend opacity can noww be set in options
+ - class: custom size of the final image works now
+ - class: real multiply was added (multiplies the images like photoshop)
+ - class: blendMode was renamed to alphaBlendMode because blendMode will be used for the real blend modes
+ - documentation updated
+ - ...
 
-## todo
- 1. class: optional size of final image (via options)
+## tasks
+ 1. class: optional size of final image (via options) - DONE
  3. class: add alternative for users with short execution time on their servers
  4. interface: thumbnail view of what images you will get
  5. interface: style adaptions
@@ -130,7 +144,10 @@ version 0.3 (22.08.2015):
   b. steps: go trough the steps of the script - DONE
   c: explain: it will be explained which part of the interface runs which part of the class - DONE
  7. class: bugfix quantity (only %4 are exactly)
- 8. class: add real multiply
+ 8. class: add real multiply - DONE
  9. class: possibility to use alternative search engines
  10. class: effects alternative for php versions without imagefilter
- 11. class: optional opacity settings
+ 11. class: optional opacity settings - DONE
+ 12. class: add image crop mode
+ 13. class: add optional background-color - DONE
+ 14. class: add real blend mode
