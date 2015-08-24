@@ -11,8 +11,7 @@ class Whirl {
 	var $backgroundColor = '255,255,255';
 	var $blendOpacity = 'default';
 	var $alphaBlendMode = 'normal';
-	var $realBlendMode = false;
-	var $realMultiply = false;
+	var $blendMode = false;
 	var $effectList = false;
 	var $effects = false;
 	var $effectBrightnessLevel = 100;
@@ -91,8 +90,8 @@ class Whirl {
 			$this->alphaBlendMode = $options['alphaBlendMode'];
 		}
 		
-		if (isset($options['realBlendMode'])) {
-			$this->realBlendMode = $options['realBlendMode'];
+		if (isset($options['blendMode'])) {
+			$this->blendMode = $options['blendMode'];
 		}
 		
 		if (isset($options['effectList'])) {
@@ -207,13 +206,20 @@ class Whirl {
 		$allResults = array();
 		$count = 0;
 
-		while ($count <= $this->quantity) {
+		while ($count < $this->quantity) {
 			$json = $this->get_url_contents('http://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=' . urlencode($this->term) . '&start=' . $count);
 			$data = json_decode($json);
+			
 			foreach ($data->responseData->results as $result) {
+				$count++;
 				$allResults[] = $result->url;
+				
+				if ($count == $this->quantity) {
+					$this->allResults = $allResults;
+					return $this->allResults;
+				}
 			}
-			$count = $count + 4;
+			
 		}
 		
 		$this->allResults = $allResults;
@@ -458,8 +464,8 @@ class Whirl {
 			}
 		}
 		
-		if ($this->realBlendMode != false) {
-			$baseImage = $this->realBlend($baseImage, $topImage, $this->realBlendMode);
+		if ($this->blendMode != false) {
+			$baseImage = $this->blend($baseImage, $topImage, $this->blendMode);
 		} else {
 			imagecopymerge($baseImage, $topImage, $destX, $destY, 0, 0, $topWidth, $topHeight, $opacity);
 		}
@@ -471,7 +477,7 @@ class Whirl {
 		return $destFile;
 	}
 	
-	public function realBlend($baseImage, $topImage, $mode) {
+	public function blend($baseImage, $topImage, $mode) {
 		$baseIsTrueColor = imageistruecolor($baseImage);
 		$topIsTrueColor = imageistruecolor($topImage);
 		
@@ -485,7 +491,7 @@ class Whirl {
 
 		for ($x = 0; $x < $topWidth; ++$x) {
 			for ($y = 0; $y < $topHeight; ++$y) {
-			
+				
 				$color = imagecolorat($baseImage, $x + $destX, $y + $destY);
 				
 				if ($baseIsTrueColor) {
@@ -514,18 +520,54 @@ class Whirl {
 				
 				switch ($mode) {
 					case 'dissolve':
-						// unknown formula
+						// depending on the top layer opacity an appropriate amount of pixel of the top layer get randomly full transparent
+						$topOpacityPercent = round(($topColor['alpha'] / 127) * 100);
+						$randomPercent = rand(1,100);
+						
+						if ($randomPercent <= $topOpacityPercent) {
+							$destColorAlpha = 127.0;
+						} else {
+							$destColorAlpha = 0.0;
+						}
+						
+						$destColor = array(
+							'red' => intval($topColor['red']),
+							'green' => intval($topColor['green']),
+							'blue' => intval($topColor['blue']),
+							'alpha' => intval($destColorAlpha)
+						);
 						break;
 						
 					case 'darkerColor':
-						// the same?
+						// Similar to the Darken blend mode, but darkens on the composite channel, instead of separate RGB color channels
+						$baseColorHsl = $this->rgbToHsl($baseColor['red'], $baseColor['green'], $baseColor['green']);
+						$topColorHsl = $this->rgbToHsl($topColor['red'], $topColor['green'], $topColor['blue']);
+						
+						if ($baseColorHsl['lightness'] < $topColorHsl['lightness']) {
+							$destColor = array(
+								'red' => intval($baseColor['red']),
+								'green' => intval($baseColor['green']),
+								'blue' => intval($baseColor['blue']),
+								'alpha' => intval($baseColor['alpha'])
+							);
+						} else {
+							$destColor = array(
+								'red' => intval($topColor['red']),
+								'green' => intval($topColor['green']),
+								'blue' => intval($topColor['blue']),
+								'alpha' => intval($topColor['alpha'])
+							);
+						}
+						break;
+						
+						
 					case 'darken':
-						// formula min(target,blend)
+						// min(target,blend)
 						$destColor = array(
 							'red' => intval(min($baseColor['red'], $topColor['red'])),
 							'green' => intval(min($baseColor['green'], $topColor['green'])),
 							'blue' => intval(min($baseColor['blue'], $topColor['blue'])),
-							'alpha' => 	intval(min($baseColor['alpha'], $topColor['alpha']))
+							'alpha' => intval(min($baseColor['alpha'], $topColor['alpha']))
 						);
 						break;
 						
@@ -541,7 +583,7 @@ class Whirl {
 						break;
 						
 					case 'colorBurn':
-						// formula maxValue - (maxValue-target) / blend
+						// maxValue - (maxValue-target) / blend
 						$destColor = array(
 							'red' => intval($baseColor['red'] * ($topColor['red'] / 255.0)),
 							'green' => intval($baseColor['green'] * ($topColor['green'] / 255.0)),
@@ -551,7 +593,7 @@ class Whirl {
 						break;
 						
 					case 'linearBurn':
-						// formula target + blend - maxValue
+						// target + blend - maxValue
 						$destColor = array(
 							'red' => intval($baseColor['red'] + $topColor['red'] - 255.0),
 							'green' => intval($baseColor['green'] + $topColor['green'] - 255.0),
@@ -561,9 +603,29 @@ class Whirl {
 						break;
 						
 					case 'lighterColor':
-						// the same?
+						// Similar to the lighten blend mode, but lightenss on the composite channel, instead of separate RGB color channels
+						$baseColorHsl = $this->rgbToHsl($baseColor['red'], $baseColor['green'], $baseColor['green']);
+						$topColorHsl = $this->rgbToHsl($topColor['red'], $topColor['green'], $topColor['blue']);
+						
+						if ($baseColorHsl['lightness'] > $topColorHsl['lightness']) {
+							$destColor = array(
+								'red' => intval($baseColor['red']),
+								'green' => intval($baseColor['green']),
+								'blue' => intval($baseColor['blue']),
+								'alpha' => intval($baseColor['alpha'])
+							);
+						} else {
+							$destColor = array(
+								'red' => intval($topColor['red']),
+								'green' => intval($topColor['green']),
+								'blue' => intval($topColor['blue']),
+								'alpha' => intval($topColor['alpha'])
+							);
+						}
+						break;
+						
 					case 'lighten':
-						// formula max(target,blend)
+						// max(target,blend)
 						$destColor = array(
 							'red' => intval(max($baseColor['red'], $topColor['red'])),
 							'green' => intval(max($baseColor['green'], $topColor['green'])),
@@ -573,7 +635,7 @@ class Whirl {
 						break;
 						
 					case 'screen':
-						// formula target + ((maxValue - target) / 100) * ((blend / 255) * 100)
+						// target + ((maxValue - target) / 100) * ((blend / 255) * 100)
 						$destColor = array(
 							'red' => intval(round($baseColor['red'] + ((255.0 - $baseColor['red']) / 100) * (($topColor['red'] / 255.0) * 100))),
 							'green' => intval(round($baseColor['green'] + ((255.0 - $baseColor['green']) / 100) * (($topColor['green'] / 255.0) * 100))),
@@ -583,7 +645,7 @@ class Whirl {
 						break;
 						
 					case 'colorDodge':
-						// formula  if (base+target > maxValue) maxValue else base
+						// if (base+target > maxValue) maxValue else base
 						$destColor = array(
 							'red' => intval(($baseColor['red'] + $topColor['red'] > 255.0 ? 255.0 : $baseColor['red'])),
 							'green' => intval(($baseColor['green'] + $topColor['green'] > 255.0 ? 255.0 : $baseColor['green'])),
@@ -593,7 +655,7 @@ class Whirl {
 						break;
 					
 					case 'linearDodge':
-						// formula  if (target + blend > maxValue) maxValue else (target + base)
+						// if (target + blend > maxValue) maxValue else (target + base)
 						$destColor = array(
 							'red' => intval(($baseColor['red'] + $topColor['red']) > 255.0 ? 255.0 : ($baseColor['red'] + $topColor['red'])),
 							'green' => intval(($baseColor['green'] + $topColor['green']) > 255.0 ? 255.0 : ($baseColor['green'] + $topColor['red'])),
@@ -603,18 +665,7 @@ class Whirl {
 						break;
 						
 					case 'overlay':
-						/*
-						formula: 
-						
-						if ($baseColor['red'] > 127.5) {
-							(Upper Layer Value * ((255-Lower Layer Value)/127.5)) + (Lower Layer Value - (255-Lower Layer Value))
-							(($topColor['red'] * ((255.0 - $baseColor['red']) / 127.5)) + ($baseColor['red'] - (255.0 - $baseColor['red'])))
-						} else {
-							Upper Layer Value * (Lower Layer Value/127.5)
-							($topColor['red'] * ($baseColor['red'] / 127.5))
-						}
-						*/
-						
+						// if (base > 127.5) { (blend * ((255-base)/127.5)) + (base - (255-base)) } else { blend * (base/127.5) }
 						$destColor = array(
 							'red' => intval($baseColor['red'] > 127.5 ? (($topColor['red'] * ((255.0 - $baseColor['red']) / 127.5)) + ($baseColor['red'] - (255.0 - $baseColor['red']))) : ($topColor['red'] * ($baseColor['red'] / 127.5))),
 							'green' => intval($baseColor['green'] > 127.5 ? (($topColor['green'] * ((255.0 - $baseColor['green']) / 127.5)) + ($baseColor['green'] - (255.0 - $baseColor['green']))) : ($topColor['green'] * ($baseColor['green'] / 127.5))),
@@ -624,7 +675,36 @@ class Whirl {
 						break;
 						
 					case 'softLight':
-						// nearly same as overlay, unknown formula
+						/*
+							a = base
+							b = top
+
+							if ((b/255) < 0.5) {
+								2 * (a/255) * (b/255) + ((a/255) * (a/255)) * (1 - (2* (b/255)))
+							} else {
+								(2 * (a/255)) * (1-(b/255)) + √(a/255) * ((2 * (b/255)) - 1)
+							}
+							
+							if:
+							((2 * ($baseColor['red'] / 255) * ($topColor['red'] / 255) + (($baseColor['red'] / 255) * ($baseColor['red'] / 255)) * (1 - (2 * ($topColor['red'] / 255)))) * 255)
+							
+							else:
+							((2 * ($baseColor['red'] / 255)) * (1 - ($topColor['red'] / 255)) + sqrt(($baseColor['red'] / 255)) * ((2 * ($topColor['red'] / 255)) - 1) * 255)
+							
+							full:
+							
+							(($topColor['red'] / 255.0) < 0.5) ? ((2 * ($baseColor['red'] / 255.0) * ($topColor['red'] / 255.0) + (($baseColor['red'] / 255.0) * ($baseColor['red'] / 255.0)) * (1 - (2 * ($topColor['red'] / 255.0)))) * 255.0) : (((2 * ($baseColor['red'] / 255.0)) * (1-($topColor['red'] / 255.0)) + sqrt(($baseColor['red'] / 255.0)) * ((2 * ($topColor['red'] / 255.0)) - 1)) * 255.0)
+							(($topColor['green'] / 255.0) < 0.5) ? ((2 * ($baseColor['green'] / 255.0) * ($topColor['green'] / 255.0) + (($baseColor['green'] / 255.0) * ($baseColor['green'] / 255.0)) * (1 - (2 * ($topColor['green'] / 255.0)))) * 255.0) : (((2 * ($baseColor['green'] / 255.0)) * (1-($topColor['green'] / 255.0)) + sqrt(($baseColor['green'] / 255.0)) * ((2 * ($topColor['green'] / 255.0)) - 1)) * 255.0)
+							(($topColor['blue'] / 255.0) < 0.5) ? ((2 * ($baseColor['blue'] / 255.0) * ($topColor['blue'] / 255.0) + (($baseColor['blue'] / 255.0) * ($baseColor['blue'] / 255.0)) * (1 - (2 * ($topColor['blue'] / 255.0)))) * 255.0) : (((2 * ($baseColor['blue'] / 255.0)) * (1-($topColor['blue'] / 255.0)) + sqrt(($baseColor['blue'] / 255.0)) * ((2 * ($topColor['blue'] / 255.0)) - 1)) * 255.0)
+							
+							
+						 */
+						$destColor = array(
+							'red' => intval(round((($topColor['red'] / 255.0) < 0.5) ? ((2 * ($baseColor['red'] / 255.0) * ($topColor['red'] / 255.0) + (($baseColor['red'] / 255.0) * ($baseColor['red'] / 255.0)) * (1 - (2 * ($topColor['red'] / 255.0)))) * 255.0) : (((2 * ($baseColor['red'] / 255.0)) * (1-($topColor['red'] / 255.0)) + sqrt(($baseColor['red'] / 255.0)) * ((2 * ($topColor['red'] / 255.0)) - 1)) * 255.0))),
+							'green' => intval(round((($topColor['green'] / 255.0) < 0.5) ? ((2 * ($baseColor['green'] / 255.0) * ($topColor['green'] / 255.0) + (($baseColor['green'] / 255.0) * ($baseColor['green'] / 255.0)) * (1 - (2 * ($topColor['green'] / 255.0)))) * 255.0) : (((2 * ($baseColor['green'] / 255.0)) * (1-($topColor['green'] / 255.0)) + sqrt(($baseColor['green'] / 255.0)) * ((2 * ($topColor['green'] / 255.0)) - 1)) * 255.0))),
+							'blue' => intval(round((($topColor['blue'] / 255.0) < 0.5) ? ((2 * ($baseColor['blue'] / 255.0) * ($topColor['blue'] / 255.0) + (($baseColor['blue'] / 255.0) * ($baseColor['blue'] / 255.0)) * (1 - (2 * ($topColor['blue'] / 255.0)))) * 255.0) : (((2 * ($baseColor['blue'] / 255.0)) * (1-($topColor['blue'] / 255.0)) + sqrt(($baseColor['blue'] / 255.0)) * ((2 * ($topColor['blue'] / 255.0)) - 1)) * 255.0))),
+							'alpha' => intval($topColor['alpha'])
+						);
 						break;
 						
 					case 'hardLight':
@@ -644,7 +724,7 @@ class Whirl {
 						break;
 						
 					case 'hardMix':
-						// formula Base + Blend >= 255.0 ? 255.0 : 0.0
+						// Base + Blend >= 255.0 ? 255.0 : 0.0
 						$destColor = array(
 							'red' => intval(($baseColor['red'] + $topColor['red']) >= 255.0 ? 255.0 : 0.0),
 							'green' => intval(($baseColor['green'] + $topColor['green']) >= 255.0 ? 255.0 : 0.0),
@@ -654,7 +734,7 @@ class Whirl {
 						break;
 						
 					case 'difference':
-						// formmula (Blend-Base) < 0 ? ((Blend-Base) * -1) : (Blend-Base)
+						// (Blend-Base) < 0 ? ((Blend-Base) * -1) : (Blend-Base)
 						$destColor = array(
 							'red' => intval(($topColor['red'] - $baseColor['red']) < 0 ? (($topColor['red'] - $baseColor['red']) * -1) : ($topColor['red'] - $baseColor['red'])),
 							'green' => intval(($topColor['green'] - $baseColor['green']) < 0 ? (($topColor['green'] - $baseColor['green']) * -1) : ($topColor['green'] - $baseColor['green'])),
@@ -664,7 +744,7 @@ class Whirl {
 						break;
 					
 					case 'exclusion':
-						//formula ((0.5 - 2*((Target/255)-0.5)*((Blend/255)-0.5)) * 255)
+						// ((0.5 - 2*((Target/255)-0.5)*((Blend/255)-0.5)) * 255)
 						$destColor = array(
 							'red' => intval(round(((0.5 - 2.0 * (($baseColor['red'] / 255.0) - 0.5) * (($topColor['red'] / 255.0) - 0.5)) * 255.0))),
 							'green' => intval(round(((0.5 - 2.0 * (($baseColor['green'] / 255.0) - 0.5) * (($topColor['green'] / 255.0) - 0.5)) * 255.0))),
@@ -674,7 +754,7 @@ class Whirl {
 						break;
 						
 					case 'subtract':
-						// formula (Base - Blend) < 0.0 ? 0.0 : (Base - Blend)
+						// (Base - Blend) < 0.0 ? 0.0 : (Base - Blend)
 						$destColor = array(
 							'red' => intval(($baseColor['red'] - $topColor['red']) < 0.0 ? 0.0 : ($baseColor['red'] - $topColor['red'])),
 							'green' => intval(($baseColor['green'] - $topColor['green']) < 0.0 ? 0.0 : ($baseColor['green'] - $topColor['green'])),
@@ -684,7 +764,7 @@ class Whirl {
 						break;
 					
 					case 'divide':
-						// formula intval(((base / blend) * 255) > 255.0 ? 255.0 : ((base / blend) * 255))
+						// intval(((base / blend) * 255) > 255.0 ? 255.0 : ((base / blend) * 255))
 						$destColor = array(
 							'red' => intval((($baseColor['red'] / $topColor['red']) * 255.0) > 255.0 ? 255.0 : (($baseColor['red'] / $topColor['red']) * 255.0)),
 							'green' => intval((($baseColor['green'] / $topColor['green']) * 255.0) > 255.0 ? 255.0 : (($baseColor['green'] / $topColor['green']) * 255.0)),
@@ -694,7 +774,7 @@ class Whirl {
 						break;
 						
 					case 'hue':
-						// formula The Hue blend mode preserves the luma and chroma of the bottom layer, while adopting the hue of the top layer (wikipedia)
+						// The Hue blend mode preserves the luma and chroma of the bottom layer, while adopting the hue of the top layer (wikipedia)
 						// unsure about handling of alpha channel (opacity)
 						$baseColorHsl = $this->rgbToHsl($baseColor['red'], $baseColor['green'], $baseColor['green']);
 						$topColorHsl = $this->rgbToHsl($topColor['red'], $topColor['green'], $topColor['blue']);
@@ -709,7 +789,7 @@ class Whirl {
 						break;
 					
 					case 'saturation':
-						// formula The Saturation blend mode preserves the luma and hue of the bottom layer, while adopting the chroma of the top layer. (wikipedia)
+						// The Saturation blend mode preserves the luma and hue of the bottom layer, while adopting the chroma of the top layer. (wikipedia)
 						// unsure about handling of alpha channel (opacity)
 						$baseColorHsl = $this->rgbToHsl($baseColor['red'], $baseColor['green'], $baseColor['green']);
 						$topColorHsl = $this->rgbToHsl($topColor['red'], $topColor['green'], $topColor['blue']);
@@ -724,7 +804,7 @@ class Whirl {
 						break;
 						
 					case 'color':
-						// formula The Color blend mode preserves the luma of the bottom layer, while adopting the hue and chroma of the top layer. (wikipedia)
+						// The Color blend mode preserves the luma of the bottom layer, while adopting the hue and chroma of the top layer. (wikipedia)
 						// unsure about handling of alpha channel (opacity)
 						$baseColorHsl = $this->rgbToHsl($baseColor['red'], $baseColor['green'], $baseColor['green']);
 						$topColorHsl = $this->rgbToHsl($topColor['red'], $topColor['green'], $topColor['blue']);
