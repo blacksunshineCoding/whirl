@@ -6,10 +6,10 @@ include 'library/whirl.class.php';
 
 $options = array();
 $options['term'] = 'zitrone';
-$options['quantity'] = 4;
-$options['blendMode'] = 'normal';
-$options['realBlendMode'] = 'multiply';
-$options['blendOpacity'] = '100';
+$options['quantity'] = 10;
+// $options['blendMode'] = 'multiply';
+// $options['blendOpacity'] = '100';
+// $options['alphaBlendMode'] = 'normal';
 $options['finalImageWidth'] = 500;
 $options['finalImageHeight'] = null;
 $options['finalImageSizing'] = 'default';
@@ -18,8 +18,9 @@ $options['finalImageSizing'] = 'default';
 // $options['effectList'] = 'colorize';
 $options['cacheDir'] = dirname(__FILE__) . '/cache';
 $whirl = new Whirl($options);
+// $results = $whirl->getResults();
+// de($results);
 $whirl->whirl();
 $finalImage = $whirl->finalImage();
-
 
 echo '<img src="cache/blend/'.$finalImage.'">';
