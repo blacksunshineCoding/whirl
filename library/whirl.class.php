@@ -773,11 +773,53 @@ class Whirl {
 						break;
 						
 					case 'linearLight':
-						// unknow formula
+						/*
+							(((base/255) + (2 * (blend/255)) - 1) * 255.0)
+							
+							intval(round(((($baseColor['red']/255) + (2 * ($topColor['red']/255)) - 1) * 255.0)))
+							intval(round(((($baseColor['green']/255) + (2 * ($topColor['green']/255)) - 1) * 255.0)))
+							intval(round(((($baseColor['blue']/255) + (2 * ($topColor['blue']/255)) - 1) * 255.0)))
+							
+							seems to differ 1 from the photoshop result, but i think this can be ignored
+						*/
+						$destColor = array(
+							'red' => intval(round(((($baseColor['red']/255) + (2 * ($topColor['red']/255)) - 1) * 255.0))),
+							'green' => intval(round(((($baseColor['green']/255) + (2 * ($topColor['green']/255)) - 1) * 255.0))),
+							'blue' => intval(round(((($baseColor['blue']/255) + (2 * ($topColor['blue']/255)) - 1) * 255.0))),
+							'alpha' => intval($topColor['alpha'])
+						);
 						break;
 						
 					case 'pinLight':
 						// unknow formula
+						/*
+							if ( ($base / 255.0) < ((2 * ($blend / 255.0)) - 1) ) {
+								$C = (((2 * ($blend / 255.0)) - 1) * 255.0);
+							} elseif ( (2 * ($blend / 255.0) - 1 < ($base / 255.0)) && (($base / 255.0) < 2 * ($blend / 255.0) )) {
+								$C = ($base);
+							} else {
+								$C = ((2 * ($blend / 255.0)) * 255.0);
+							}
+							
+							
+							( ($base / 255.0) < ((2 * ($blend / 255.0)) - 1) ) ? (((2 * ($blend / 255.0)) - 1) * 255.0) : ( (2 * ($blend / 255.0) - 1 < ($base / 255.0)) && (($base / 255.0) < 2 * ($blend / 255.0) )) ? ($base) : ((2 * ($blend / 255.0)) * 255.0)
+							
+							intval(round())
+							
+							full:
+							
+							intval(round((($baseColor['red'] / 255.0) < ((2 * ($topColor['red'] / 255.0)) - 1) ) ? (((2 * ($topColor['red'] / 255.0)) - 1) * 255.0) : ( (2 * ($topColor['red'] / 255.0) - 1 < ($baseColor['red'] / 255.0)) && (($baseColor['red'] / 255.0) < 2 * ($topColor['red'] / 255.0))) ? ($baseColor['red']) : ((2 * ($topColor['red'] / 255.0)) * 255.0)))
+							intval(round((($baseColor['green'] / 255.0) < ((2 * ($topColor['green'] / 255.0)) - 1) ) ? (((2 * ($topColor['green'] / 255.0)) - 1) * 255.0) : ( (2 * ($topColor['green'] / 255.0) - 1 < ($baseColor['green'] / 255.0)) && (($baseColor['green'] / 255.0) < 2 * ($topColor['green'] / 255.0))) ? ($baseColor['green']) : ((2 * ($topColor['green'] / 255.0)) * 255.0)))
+							intval(round((($baseColor['blue'] / 255.0) < ((2 * ($topColor['blue'] / 255.0)) - 1) ) ? (((2 * ($topColor['blue'] / 255.0)) - 1) * 255.0) : ( (2 * ($topColor['blue'] / 255.0) - 1 < ($baseColor['blue'] / 255.0)) && (($baseColor['blue'] / 255.0) < 2 * ($topColor['blue'] / 255.0))) ? ($baseColor['blue']) : ((2 * ($topColor['blue'] / 255.0)) * 255.0)))
+						
+
+						*/
+						$destColor = array(
+							'red' => intval(round((($baseColor['red'] / 255.0) < ((2 * ($topColor['red'] / 255.0)) - 1) ) ? (((2 * ($topColor['red'] / 255.0)) - 1) * 255.0) : ( (2 * ($topColor['red'] / 255.0) - 1 < ($baseColor['red'] / 255.0)) && (($baseColor['red'] / 255.0) < 2 * ($topColor['red'] / 255.0))) ? ($baseColor['red']) : ((2 * ($topColor['red'] / 255.0)) * 255.0))),
+							'green' => intval(round((($baseColor['green'] / 255.0) < ((2 * ($topColor['green'] / 255.0)) - 1) ) ? (((2 * ($topColor['green'] / 255.0)) - 1) * 255.0) : ( (2 * ($topColor['green'] / 255.0) - 1 < ($baseColor['green'] / 255.0)) && (($baseColor['green'] / 255.0) < 2 * ($topColor['green'] / 255.0))) ? ($baseColor['green']) : ((2 * ($topColor['green'] / 255.0)) * 255.0))),
+							'blue' => intval(round((($baseColor['blue'] / 255.0) < ((2 * ($topColor['blue'] / 255.0)) - 1) ) ? (((2 * ($topColor['blue'] / 255.0)) - 1) * 255.0) : ( (2 * ($topColor['blue'] / 255.0) - 1 < ($baseColor['blue'] / 255.0)) && (($baseColor['blue'] / 255.0) < 2 * ($topColor['blue'] / 255.0))) ? ($baseColor['blue']) : ((2 * ($topColor['blue'] / 255.0)) * 255.0))),
+							'alpha' => intval($topColor['alpha'])
+						);
 						break;
 						
 					case 'hardMix':
