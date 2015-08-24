@@ -226,7 +226,8 @@ Creates a result color with the hue and saturation of the base color and the lum
  - class: renamed realBlendMode to blendMode because there is only real blend mode, the others are effects or alpha blend modes
  - class: quantity works now exactly (bugfix)
  - class: got the blend mode dissolve working in pretty much the same way photoshop does
- - class: soft light blending mode also works (damns, this was a hard one)
+ - class: soft light blend mode also works (damns, this was a hard one)
+ - class: finished all blend modes
  - documentation updated
  - ...
 
