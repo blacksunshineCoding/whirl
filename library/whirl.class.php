@@ -709,10 +709,67 @@ class Whirl {
 						
 					case 'hardLight':
 						// nearly same as overlay, unknow formula
+						/*
+							if ($blend > 127.5) {
+								$test = ($base * ((255 - $blend) / 127.5)) + ($blend - (255 - $blend));
+							} else {
+								$test = $base * ($blend / 127.5);
+							}
+							
+							intval(round())
+							
+							($topColor['red'] > 127.5) ? () : ()
+							
+							($baseColor['red'] * ((255 - $topColor['red']) / 127.5)) + ($topColor['red'] - (255 - $topColor['red']))
+							
+							($baseColor['red'] * ($topColor['red'] / 127.5))
+							
+							full:
+							
+							($topColor['red'] > 127.5) ? ($baseColor['red'] * ((255 - $topColor['red']) / 127.5)) + ($topColor['red'] - (255 - $topColor['red'])) : ($baseColor['red'] * ($topColor['red'] / 127.5))
+							
+							intval(round(($topColor['red'] > 127.5) ? ($baseColor['red'] * ((255 - $topColor['red']) / 127.5)) + ($topColor['red'] - (255 - $topColor['red'])) : ($baseColor['red'] * ($topColor['red'] / 127.5))))
+							intval(round(($topColor['green'] > 127.5) ? ($baseColor['green'] * ((255 - $topColor['green']) / 127.5)) + ($topColor['green'] - (255 - $topColor['green'])) : ($baseColor['green'] * ($topColor['green'] / 127.5))))
+							intval(round(($topColor['blue'] > 127.5) ? ($baseColor['blue'] * ((255 - $topColor['blue']) / 127.5)) + ($topColor['blue'] - (255 - $topColor['blue'])) : ($baseColor['blue'] * ($topColor['blue'] / 127.5))))
+							
+						*/
+						$destColor = array(
+							'red' => intval(round(($topColor['red'] > 127.5) ? ($baseColor['red'] * ((255 - $topColor['red']) / 127.5)) + ($topColor['red'] - (255 - $topColor['red'])) : ($baseColor['red'] * ($topColor['red'] / 127.5)))),
+							'green' => intval(round(($topColor['green'] > 127.5) ? ($baseColor['green'] * ((255 - $topColor['green']) / 127.5)) + ($topColor['green'] - (255 - $topColor['green'])) : ($baseColor['green'] * ($topColor['green'] / 127.5)))),
+							'blue' => intval(round(($topColor['blue'] > 127.5) ? ($baseColor['blue'] * ((255 - $topColor['blue']) / 127.5)) + ($topColor['blue'] - (255 - $topColor['blue'])) : ($baseColor['blue'] * ($topColor['blue'] / 127.5)))),
+							'alpha' => intval($topColor['alpha'])
+						);
 						break;
 						
 					case 'vividLight':
-						// unknow formula
+						/*
+							if ((blend / 255) <= 0.5) {
+								C = 1 - (1 - (base / 255)) / (2 * (blend / 255))
+							} else {
+								C = (base / 255) / (2 * (1 - (blend / 255)))
+							}
+							
+							intval(round())
+							
+							(($topColor['red'] / 255) <= 0.5) ? () : ()
+							
+							((1 - (1 - ($baseColor['red'] / 255.0)) / (2 * ($topColor['red'] / 255.0))) * 255.0)
+							
+							 ((($baseColor['red'] / 255.0) / (2 * (1 - ($topColor['red'] / 255.0)))) * 255.0)
+							 
+							 full:
+							 
+							 intval(round((($topColor['red'] / 255) <= 0.5) ? ((1 - (1 - ($baseColor['red'] / 255.0)) / (2 * ($topColor['red'] / 255.0))) * 255.0) : ((($baseColor['red'] / 255.0) / (2 * (1 - ($topColor['red'] / 255.0)))) * 255.0)))
+							 intval(round((($topColor['green'] / 255) <= 0.5) ? ((1 - (1 - ($baseColor['green'] / 255.0)) / (2 * ($topColor['green'] / 255.0))) * 255.0) : ((($baseColor['green'] / 255.0) / (2 * (1 - ($topColor['green'] / 255.0)))) * 255.0)))
+							 intval(round((($topColor['blue'] / 255) <= 0.5) ? ((1 - (1 - ($baseColor['blue'] / 255.0)) / (2 * ($topColor['blue'] / 255.0))) * 255.0) : ((($baseColor['blue'] / 255.0) / (2 * (1 - ($topColor['blue'] / 255.0)))) * 255.0)))
+							
+						*/
+						$destColor = array(
+							'red' => intval(round((($topColor['red'] / 255) <= 0.5) ? ((1 - (1 - ($baseColor['red'] / 255.0)) / (2 * ($topColor['red'] / 255.0))) * 255.0) : ((($baseColor['red'] / 255.0) / (2 * (1 - ($topColor['red'] / 255.0)))) * 255.0))),
+							'green' => intval(round((($topColor['green'] / 255) <= 0.5) ? ((1 - (1 - ($baseColor['green'] / 255.0)) / (2 * ($topColor['green'] / 255.0))) * 255.0) : ((($baseColor['green'] / 255.0) / (2 * (1 - ($topColor['green'] / 255.0)))) * 255.0))),
+							'blue' => intval(round((($topColor['blue'] / 255) <= 0.5) ? ((1 - (1 - ($baseColor['blue'] / 255.0)) / (2 * ($topColor['blue'] / 255.0))) * 255.0) : ((($baseColor['blue'] / 255.0) / (2 * (1 - ($topColor['blue'] / 255.0)))) * 255.0))),
+							'alpha' => intval($topColor['alpha'])
+						);
 						break;
 						
 					case 'linearLight':
